@@ -4,7 +4,11 @@ mod model;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "kommit", version, about = "AI-powered git commit messages, fully local and offline")]
+#[command(
+    name = "kommit",
+    version,
+    about = "AI-powered git commit messages, fully local and offline"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -25,26 +29,24 @@ fn main() {
         Commands::Init => {
             println!("kommit: setting up in this repo...");
         }
-        Commands::Generate => {
-            match diff::get_staged_diff() {
-                Ok(d) if d.is_empty => {
-                    println!("Nothing staged. Run `git add` first.");
-                }
-                Ok(d) => {
-                    let req = model::GenerateRequest {
-                        diff: d.raw,
-                        files_changed: d.files_changed,
-                        style_hint: None,
-                    };
-                    let response = model::generate_stub(&req);
-                    println!("\nSuggested commit message:");
-                    println!("\n  {}\n", response.message);
-                    println!("Accept? [y/n/e to edit]: ");
-                }
-                Err(e) => {
-                    eprintln!("Error reading diff: {}", e);
-                }
+        Commands::Generate => match diff::get_staged_diff() {
+            Ok(d) if d.is_empty => {
+                println!("Nothing staged. Run `git add` first.");
             }
-        }
+            Ok(d) => {
+                let req = model::GenerateRequest {
+                    diff: d.raw,
+                    files_changed: d.files_changed,
+                    style_hint: None,
+                };
+                let response = model::generate_stub(&req);
+                println!("\nSuggested commit message:");
+                println!("\n  {}\n", response.message);
+                println!("Accept? [y/n/e to edit]: ");
+            }
+            Err(e) => {
+                eprintln!("Error reading diff: {}", e);
+            }
+        },
     }
 }
