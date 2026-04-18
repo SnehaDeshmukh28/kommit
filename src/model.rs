@@ -6,6 +6,7 @@ pub struct GenerateRequest {
 
 pub struct GenerateResponse {
     pub message: String,
+    #[allow(dead_code)]
     pub confidence: f32,
 }
 
@@ -56,9 +57,13 @@ pub fn generate_stub(req: &GenerateRequest) -> GenerateResponse {
         .files_changed
         .first()
         .map(|f| {
-            if f.contains("test") { "test" }
-            else if f.contains("readme") || f.contains("README") { "docs" }
-            else { "feat" }
+            if f.contains("test") {
+                "test"
+            } else if f.contains("readme") || f.contains("README") {
+                "docs"
+            } else {
+                "feat"
+            }
         })
         .unwrap_or("chore");
 
