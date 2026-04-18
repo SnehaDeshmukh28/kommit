@@ -1,0 +1,17 @@
+[package]
+name = "kommit"
+version = "0.1.0"
+edition = "2024"
+description = "AI-powered git commit messages, fully local and offline"
+license = "MIT"
+repository = "https://github.com/SnehaDeshmukh28/kommit"
+readme = "README.md"
+keywords = ["git", "commit", "ai", "local", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+
+[[bin]]
+name = "kommit"
+path = "src/main.rs"
