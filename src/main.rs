@@ -1,8 +1,9 @@
+mod diff;
+
 use clap::{Parser, Subcommand};
 
-/// kommit — AI-powered git commit messages, fully local
 #[derive(Parser)]
-#[command(name = "kommit", version, about, long_about = None)]
+#[command(name = "kommit", version, about = "AI-powered git commit messages, fully local and offline")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -24,7 +25,21 @@ fn main() {
             println!("kommit: setting up in this repo...");
         }
         Commands::Generate => {
-            println!("kommit: generating commit message...");
+            match diff::get_staged_diff() {
+                Ok(d) if d.is_empty => {
+                    println!("Nothing staged. Run `git add` first.");
+                }
+                Ok(d) => {
+                    println!("Found {} changed file(s):", d.files_changed.len());
+                    for file in &d.files_changed {
+                        println!("  - {}", file);
+                    }
+                    println!("\nDiff preview ({} chars)", d.raw.len());
+                }
+                Err(e) => {
+                    eprintln!("Error reading diff: {}", e);
+                }
+            }
         }
     }
 }
