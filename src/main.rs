@@ -1,4 +1,5 @@
 mod diff;
+mod model;
 
 use clap::{Parser, Subcommand};
 
@@ -30,11 +31,15 @@ fn main() {
                     println!("Nothing staged. Run `git add` first.");
                 }
                 Ok(d) => {
-                    println!("Found {} changed file(s):", d.files_changed.len());
-                    for file in &d.files_changed {
-                        println!("  - {}", file);
-                    }
-                    println!("\nDiff preview ({} chars)", d.raw.len());
+                    let req = model::GenerateRequest {
+                        diff: d.raw,
+                        files_changed: d.files_changed,
+                        style_hint: None,
+                    };
+                    let response = model::generate_stub(&req);
+                    println!("\nSuggested commit message:");
+                    println!("\n  {}\n", response.message);
+                    println!("Accept? [y/n/e to edit]: ");
                 }
                 Err(e) => {
                     eprintln!("Error reading diff: {}", e);
