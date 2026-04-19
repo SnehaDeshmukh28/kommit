@@ -6,6 +6,7 @@ pub enum HookStatus {
     Installed,
     AlreadyInstalled,
     NotAGitRepo,
+    KommitNotInPath,
     Failed(String),
 }
 
@@ -24,10 +25,22 @@ fn find_git_root() -> Option<PathBuf> {
     Some(PathBuf::from(path))
 }
 
+fn is_kommit_in_path() -> bool {
+    Command::new("kommit")
+        .arg("--version")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+}
+
 pub fn install_hook() -> HookStatus {
     let Some(git_root) = find_git_root() else {
         return HookStatus::NotAGitRepo;
     };
+
+    if !is_kommit_in_path() {
+        return HookStatus::KommitNotInPath;
+    }
 
     let hook_path = git_root
         .join(".git")
@@ -62,7 +75,4 @@ fn set_executable(path: &PathBuf) {
 }
 
 #[cfg(windows)]
-fn set_executable(_path: &PathBuf) {
-    // Windows doesn't use Unix permissions
-    // Git for Windows handles executable bits separately
-}
+fn set_executable(_path: &PathBuf) {}

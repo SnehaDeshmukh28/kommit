@@ -41,6 +41,12 @@ fn main() {
                     eprintln!("Error: not inside a git repository.");
                     std::process::exit(1);
                 }
+                hook::HookStatus::KommitNotInPath => {
+                    eprintln!("Error: kommit is not in your PATH.");
+                    eprintln!("Add the binary to your PATH first, then run `kommit init` again.");
+                    eprintln!("See README for install instructions.");
+                    std::process::exit(1);
+                }
                 hook::HookStatus::Failed(e) => {
                     eprintln!("Failed to install hook: {}", e);
                     std::process::exit(1);
