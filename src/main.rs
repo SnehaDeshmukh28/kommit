@@ -1,4 +1,5 @@
 mod diff;
+mod hook;
 mod model;
 mod style;
 
@@ -28,7 +29,23 @@ fn main() {
 
     match cli.command {
         Commands::Init => {
-            println!("kommit: setting up in this repo...");
+            println!("Setting up kommit...");
+            match hook::install_hook() {
+                hook::HookStatus::Installed => {
+                    println!("Hook installed. kommit will now suggest messages on every commit.");
+                }
+                hook::HookStatus::AlreadyInstalled => {
+                    println!("Hook already installed. You're good to go.");
+                }
+                hook::HookStatus::NotAGitRepo => {
+                    eprintln!("Error: not inside a git repository.");
+                    std::process::exit(1);
+                }
+                hook::HookStatus::Failed(e) => {
+                    eprintln!("Failed to install hook: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
         Commands::Generate => {
             let profile = style::learn_from_git_log();
