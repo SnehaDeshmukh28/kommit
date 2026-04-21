@@ -35,6 +35,17 @@ kommit runs entirely on your machine using a small local model via llama.cpp.
 
 - [Rust](https://rustup.rs/) 1.75+
 - Git
+- [Ollama](https://ollama.com) — for local model inference
+
+### Set up ollama
+
+```bash
+# After installing ollama, pull the model (one-time, ~1GB)
+ollama pull qwen2.5-coder:1.5b
+
+# Start ollama (needs to be running when you use kommit)
+ollama serve
+```
 
 ### Build from source
 
@@ -114,7 +125,7 @@ Active development — v0.1.0 in progress.
 | Style learning from git log | ✅ Done |
 | Git hook installer | ✅ Done |
 | Prompt builder | ✅ Done |
-| Local model inference (llama.cpp) | 🔄 In progress |
+| Local model inference (ollama) | ✅ Done |
 | Interactive accept / edit / reject | 📋 Planned |
 | Homebrew tap (Mac) | 📋 Planned |
 | Scoop bucket (Windows) | 📋 Planned |
