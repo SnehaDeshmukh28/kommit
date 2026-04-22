@@ -25,14 +25,16 @@ struct OllamaResponse {
 }
 
 pub fn build_prompt(req: &GenerateRequest) -> String {
+    let config = crate::config::load();
+
     let files_summary = if req.files_changed.is_empty() {
         "unknown files".to_string()
     } else {
         req.files_changed.join(", ")
     };
 
-    let diff_preview = if req.diff.len() > 3000 {
-        format!("{}... [truncated]", &req.diff[..3000])
+    let diff_preview = if req.diff.len() > config.max_diff_chars {
+        format!("{}... [truncated]", &req.diff[..config.max_diff_chars])
     } else {
         req.diff.clone()
     };
@@ -63,9 +65,10 @@ Commit message:"#
 }
 
 pub fn generate(req: &GenerateRequest) -> GenerateResponse {
+    let config = crate::config::load();
     let prompt = build_prompt(req);
 
-    match call_ollama(&prompt) {
+    match call_ollama(&prompt, &config.ollama_url, &config.model) {
         Ok(message) => GenerateResponse {
             message: message.trim().to_string(),
             confidence: 1.0,
@@ -73,6 +76,7 @@ pub fn generate(req: &GenerateRequest) -> GenerateResponse {
         Err(e) => {
             eprintln!("Model error: {}", e);
             eprintln!("Make sure ollama is running: ollama serve");
+            eprintln!("Config file: {}", crate::config::show_path());
             GenerateResponse {
                 message: "chore: update implementation".to_string(),
                 confidence: 0.0,
@@ -81,21 +85,23 @@ pub fn generate(req: &GenerateRequest) -> GenerateResponse {
     }
 }
 
-fn call_ollama(prompt: &str) -> Result<String, String> {
+fn call_ollama(prompt: &str, base_url: &str, model: &str) -> Result<String, String> {
     let client = reqwest::blocking::Client::new();
 
     let body = OllamaRequest {
-        model: "qwen2.5-coder:1.5b".to_string(),
+        model: model.to_string(),
         prompt: prompt.to_string(),
         stream: false,
     };
 
+    let url = format!("{}/api/generate", base_url);
+
     let response = client
-        .post("http://localhost:11434/api/generate")
+        .post(&url)
         .json(&body)
         .timeout(std::time::Duration::from_secs(30))
         .send()
-        .map_err(|e| format!("Failed to reach ollama: {}", e))?;
+        .map_err(|e| format!("Failed to reach ollama at {}: {}", base_url, e))?;
 
     let ollama_response: OllamaResponse = response
         .json()
