@@ -67,6 +67,14 @@ fn main() {
                     println!("Nothing staged. Run `git add` first.");
                 }
                 Ok(d) => {
+                    if !d.skipped_files.is_empty() {
+                        println!(
+                            "  Skipped {} junk file(s): {}\n",
+                            d.skipped_files.len(),
+                            d.skipped_files.join(", ")
+                        );
+                    }
+
                     println!("Generating commit message...\n");
 
                     let start = std::time::Instant::now();
