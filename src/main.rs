@@ -1,5 +1,6 @@
 mod diff;
 mod hook;
+mod interactive;
 mod model;
 mod style;
 
@@ -44,7 +45,6 @@ fn main() {
                 hook::HookStatus::KommitNotInPath => {
                     eprintln!("Error: kommit is not in your PATH.");
                     eprintln!("Add the binary to your PATH first, then run `kommit init` again.");
-                    eprintln!("See README for install instructions.");
                     std::process::exit(1);
                 }
                 hook::HookStatus::Failed(e) => {
@@ -60,22 +60,65 @@ fn main() {
             println!("Learning from your last commits...");
             println!("  Preferred type : {}", profile.preferred_type);
             println!("  Uses scope     : {}", profile.uses_scope);
-            println!("  Avg length     : {} chars", profile.avg_length);
+            println!("  Avg length     : {} chars\n", profile.avg_length);
 
             match diff::get_staged_diff() {
                 Ok(d) if d.is_empty => {
                     println!("Nothing staged. Run `git add` first.");
                 }
                 Ok(d) => {
+                    println!("Generating commit message...\n");
+
+                    let start = std::time::Instant::now();
+
                     let req = model::GenerateRequest {
-                        diff: d.raw,
-                        files_changed: d.files_changed,
-                        style_hint: Some(style_hint),
+                        diff: d.raw.clone(),
+                        files_changed: d.files_changed.clone(),
+                        style_hint: Some(style_hint.clone()),
                     };
-                    let response = model::generate_stub(&req);
-                    println!("\nSuggested commit message:");
-                    println!("\n  {}\n", response.message);
-                    println!("Accept? [y/n/e to edit]: ");
+
+                    let mut response = model::generate_stub(&req);
+                    let elapsed = start.elapsed();
+                    println!("  Generated in {:.1}s\n", elapsed.as_secs_f32());
+
+                    loop {
+                        match interactive::prompt_user(&response.message) {
+                            interactive::UserChoice::Accept => {
+                                match interactive::commit_with_message(&response.message) {
+                                    Ok(_) => break,
+                                    Err(e) => {
+                                        eprintln!("Error: {}", e);
+                                        break;
+                                    }
+                                }
+                            }
+                            interactive::UserChoice::Edit(new_msg) => {
+                                match interactive::commit_with_message(&new_msg) {
+                                    Ok(_) => break,
+                                    Err(e) => {
+                                        eprintln!("Error: {}", e);
+                                        break;
+                                    }
+                                }
+                            }
+                            interactive::UserChoice::Reject => {
+                                println!("Cancelled. Nothing committed.");
+                                break;
+                            }
+                            interactive::UserChoice::Regenerate => {
+                                println!("Regenerating...\n");
+                                let regen_start = std::time::Instant::now();
+                                let new_req = model::GenerateRequest {
+                                    diff: d.raw.clone(),
+                                    files_changed: d.files_changed.clone(),
+                                    style_hint: Some(style_hint.clone()),
+                                };
+                                response = model::generate_stub(&new_req);
+                                let regen_elapsed = regen_start.elapsed();
+                                println!("  Generated in {:.1}s\n", regen_elapsed.as_secs_f32());
+                            }
+                        }
+                    }
                 }
                 Err(e) => {
                     eprintln!("Error reading diff: {}", e);
