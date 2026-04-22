@@ -1,3 +1,4 @@
+mod config;
 mod diff;
 mod hook;
 mod interactive;
@@ -23,6 +24,8 @@ enum Commands {
     Init,
     /// Generate a commit message from staged changes
     Generate,
+    /// Show current config and config file location
+    Config,
 }
 
 fn main() {
@@ -132,6 +135,19 @@ fn main() {
                     eprintln!("Error reading diff: {}", e);
                 }
             }
+        }
+        Commands::Config => {
+            let config = config::load();
+            println!("Config file: {}", config::show_path());
+            println!();
+            println!("  model          = {}", config.model);
+            println!("  ollama_url     = {}", config.ollama_url);
+            println!("  max_diff_chars = {}", config.max_diff_chars);
+            println!();
+            println!("To customize, create the config file and add:");
+            println!("  model = \"llama3.2:3b\"");
+            println!("  ollama_url = \"http://localhost:11434\"");
+            println!("  max_diff_chars = 4000");
         }
     }
 }
