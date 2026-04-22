@@ -26,9 +26,9 @@ const JUNK_FILENAMES: &[&str] = &[
 
 fn is_junk_file(path: &str) -> bool {
     let lower = path.to_lowercase();
-    let filename = lower.split('/').last().unwrap_or(&lower);
+    let filename = lower.split('/').next_back().unwrap_or(&lower);
 
-    if JUNK_FILENAMES.iter().any(|j| filename == *j) {
+    if JUNK_FILENAMES.contains(&filename) {
         return true;
     }
 
