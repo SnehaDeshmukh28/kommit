@@ -47,6 +47,17 @@ ollama pull qwen2.5-coder:1.5b
 ollama serve
 ```
 
+### Download binary (no Rust needed)
+
+Download the latest binary for your platform from the
+[releases page](https://github.com/SnehaDeshmukh28/kommit/releases/latest):
+
+- **Windows:** `kommit-windows-x86_64.exe`
+- **Mac:** `kommit-macos-x86_64`
+- **Linux:** `kommit-linux-x86_64`
+
+Add it to your PATH and you're done.
+
 ### Build from source
 
 ```bash
@@ -101,6 +112,26 @@ Accept? [y/n/e to edit]:
 
 ---
 
+## Configuration
+
+Create `~/.kommit/config.toml` to customize behaviour:
+
+```toml
+model = "llama3.2:3b"
+ollama_url = "http://localhost:11434"
+max_diff_chars = 4000
+```
+
+View your current config:
+
+```bash
+kommit config
+```
+
+All settings are optional — defaults work out of the box.
+
+---
+
 ## How it works
 
 ```
@@ -117,7 +148,7 @@ git add .  →  kommit reads staged diff
 
 ## Status
 
-Active development — v0.1.0 in progress.
+Active development — v0.4.0 released.
 
 | Feature | Status |
 |---|---|
@@ -126,10 +157,15 @@ Active development — v0.1.0 in progress.
 | Git hook installer | ✅ Done |
 | Prompt builder | ✅ Done |
 | Local model inference (ollama) | ✅ Done |
-| Interactive accept / edit / reject | 📋 Planned |
+| Interactive accept / edit / reject | ✅ Done |
+| Junk file exclusion | ✅ Done |
+| Configurable model via config file | ✅ Done |
+| Cross-platform release binaries | ✅ Done |
+| Native llama.cpp backend | 🔄 In progress |
+| Commit message body with reasoning | 📋 Planned |
+| Auto-download model on first run | 📋 Planned |
 | Homebrew tap (Mac) | 📋 Planned |
 | Scoop bucket (Windows) | 📋 Planned |
-| cargo install support | 📋 Planned |
 
 ---
 
