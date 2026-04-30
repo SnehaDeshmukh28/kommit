@@ -23,7 +23,12 @@ enum Commands {
     /// Set up kommit in the current git repo
     Init,
     /// Generate a commit message from staged changes
-    Generate,
+    #[command(arg_required_else_help = false)]
+    Generate {
+        /// Include reasoning body in commit message
+        #[arg(long, short)]
+        body: bool,
+    },
     /// Show current config and config file location
     Config,
 }
@@ -56,7 +61,7 @@ fn main() {
                 }
             }
         }
-        Commands::Generate => {
+        Commands::Generate { body } => {
             let profile = style::learn_from_git_log();
             let style_hint = style::build_style_hint(&profile);
 
@@ -78,7 +83,11 @@ fn main() {
                         );
                     }
 
-                    println!("Generating commit message...\n");
+                    if body {
+                        println!("Generating commit message with reasoning...\n");
+                    } else {
+                        println!("Generating commit message...\n");
+                    }
 
                     let start = std::time::Instant::now();
 
@@ -86,6 +95,7 @@ fn main() {
                         diff: d.raw.clone(),
                         files_changed: d.files_changed.clone(),
                         style_hint: Some(style_hint.clone()),
+                        include_body: body,
                     };
 
                     let mut response = model::generate_stub(&req);
@@ -93,9 +103,9 @@ fn main() {
                     println!("  Generated in {:.1}s\n", elapsed.as_secs_f32());
 
                     loop {
-                        match interactive::prompt_user(&response.message) {
+                        match interactive::prompt_user(&response.full_message()) {
                             interactive::UserChoice::Accept => {
-                                match interactive::commit_with_message(&response.message) {
+                                match interactive::commit_with_message(&response.full_message()) {
                                     Ok(_) => break,
                                     Err(e) => {
                                         eprintln!("Error: {}", e);
@@ -123,6 +133,7 @@ fn main() {
                                     diff: d.raw.clone(),
                                     files_changed: d.files_changed.clone(),
                                     style_hint: Some(style_hint.clone()),
+                                    include_body: body,
                                 };
                                 response = model::generate_stub(&new_req);
                                 let regen_elapsed = regen_start.elapsed();
