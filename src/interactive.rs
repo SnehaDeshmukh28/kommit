@@ -10,9 +10,26 @@ pub enum UserChoice {
 pub fn prompt_user(suggested: &str) -> UserChoice {
     loop {
         println!();
+
+        let parts: Vec<&str> = suggested.splitn(2, "\n\n").collect();
+        let subject = parts[0].trim();
+
         println!("  Suggested message:");
         println!();
-        println!("    {}", suggested);
+        println!("    {}", subject);
+
+        if parts.len() > 1 {
+            let body = parts[1].trim();
+            if !body.is_empty() {
+                println!();
+                println!("  Reasoning:");
+                println!();
+                for line in body.lines() {
+                    println!("    {}", line);
+                }
+            }
+        }
+
         println!();
         println!("  y  accept    e  edit    r  regenerate    n  cancel");
         println!();
