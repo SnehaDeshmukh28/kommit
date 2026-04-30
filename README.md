@@ -112,6 +112,28 @@ Accept? [y/n/e to edit]:
 
 ---
 
+### Generate with reasoning
+
+```bash
+kommit generate --body
+```
+
+Example output:
+
+```
+  Suggested message:
+
+    feat(auth): replace session tokens with JWT
+
+  Reasoning:
+
+    Switched to JWT because session storage was becoming
+    a bottleneck at scale. JWT allows stateless auth
+    across multiple service instances without shared state.
+
+  y  accept    e  edit    r  regenerate    n  cancel
+```
+
 ## Configuration
 
 Create `~/.kommit/config.toml` to customize behaviour:
@@ -162,7 +184,7 @@ Active development — v0.4.0 released.
 | Configurable model via config file | ✅ Done |
 | Cross-platform release binaries | ✅ Done |
 | Native llama.cpp backend | 🔄 In progress |
-| Commit message body with reasoning | 📋 Planned |
+| Commit message body with reasoning | ✅ Done |
 | Auto-download model on first run | 📋 Planned |
 | Homebrew tap (Mac) | 📋 Planned |
 | Scoop bucket (Windows) | 📋 Planned |
